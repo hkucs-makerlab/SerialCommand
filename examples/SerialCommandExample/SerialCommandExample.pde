@@ -1,4 +1,4 @@
-#include <SerialCommand.hpp>
+#include <SerialCommand.h>
 
 #define arduinoLED 13  // Arduino LED on board
 
