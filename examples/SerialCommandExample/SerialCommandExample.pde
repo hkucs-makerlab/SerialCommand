@@ -82,10 +82,10 @@ void setup() {
   }
 
   // Setup callbacks for ConsoleCommand commands
-  sCmd.addCommand("ON", LED_on);         // Turns LED on
-  sCmd.addCommand("OFF", LED_off);       // Turns LED off
-  sCmd.addCommand("HELLO", sayHello);    // Echos the string argument back
-  sCmd.addCommand("P", processCommand);  // Converts two arguments to integers and echos them back
+  sCmd.addCommand("on", LED_on);         // Turns LED on
+  sCmd.addCommand("off", LED_off);       // Turns LED off
+  sCmd.addCommand("hello", sayHello);    // Echos the string argument back
+  sCmd.addCommand("p", processCommand);  // Converts two arguments to integers and echos them back
   sCmd.setDefaultHandler(unrecognized);  // Handler for command that isn't matched  (says "What?")
-  Console.println("Ready");
+  Console.println("[Ready!]");
 }
