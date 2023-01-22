@@ -1,6 +1,6 @@
 /**
- * SerialCommand - A Wiring/Arduino library to tokenize and parse commands
- * received over a serial port.
+ * ConsoleCommand - A Wiring/Arduino library to tokenize and parse commands
+ * received over a Console port.
  * 
  * Copyright (C) 2012 Stefan Rado
  * Copyright (C) 2011 Steven Cogswell <steven.cogswell@gmail.com>
@@ -21,13 +21,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "SerialCommand.h"
-
+#include <SoftwareSerial.h>
+#include "SerialCommand.hpp"
+template class SerialCommand<HardwareSerial, HardwareSerial>;
+template class SerialCommand<HardwareSerial, SoftwareSerial>;
+template class SerialCommand<SoftwareSerial, SoftwareSerial>;
+template class SerialCommand<SoftwareSerial, HardwareSerial>;
 /**
  * Constructor makes sure some things are set.
  */
-SerialCommand::SerialCommand()
-  : commandList(NULL),
+template<typename T, typename T2>
+SerialCommand<T, T2>::SerialCommand(T& blueTooth, T2& console)
+  : Console(console), 
+    BlueTooth(blueTooth),
+    commandList(NULL),
     commandCount(0),
     defaultHandler(NULL),
     term('\n'),           // default terminator for commands, newline character
@@ -42,12 +49,13 @@ SerialCommand::SerialCommand()
  * This is used for matching a found token in the buffer, and gives the pointer
  * to the handler function to deal with it.
  */
-void SerialCommand::addCommand(const char *command, void (*function)()) {
+template<typename T, typename T2>
+void SerialCommand<T, T2>::addCommand(const char *command, void (*function)()) {
   #ifdef SERIALCOMMAND_DEBUG
-    Serial.print("Adding command (");
-    Serial.print(commandCount);
-    Serial.print("): ");
-    Serial.println(command);
+    Console.print("Adding command (");
+    Console.print(commandCount);
+    Console.print("): ");
+    Console.println(command);
   #endif
 
   commandList = (SerialCommandCallback *) realloc(commandList, (commandCount + 1) * sizeof(SerialCommandCallback));
@@ -60,27 +68,29 @@ void SerialCommand::addCommand(const char *command, void (*function)()) {
  * This sets up a handler to be called in the event that the receveived command string
  * isn't in the list of commands.
  */
-void SerialCommand::setDefaultHandler(void (*function)(const char *)) {
+template<typename T, typename T2>
+void SerialCommand<T, T2>::setDefaultHandler(void (*function)(const char *)) {
   defaultHandler = function;
 }
 
 
 /**
- * This checks the Serial stream for characters, and assembles them into a buffer.
+ * This checks the Console stream for characters, and assembles them into a buffer.
  * When the terminator character (default '\n') is seen, it starts parsing the
  * buffer for a prefix command, and calls handlers setup by addCommand() member
  */
-void SerialCommand::readSerial() {
-  while (Serial.available() > 0) {
-    char inChar = Serial.read();   // Read single available character, there may be more waiting
+template<typename T, typename T2>
+void SerialCommand<T, T2>::readSerial() {
+  while (BlueTooth.available() > 0) {
+    char inChar = BlueTooth.read();   // Read single available character, there may be more waiting
     #ifdef SERIALCOMMAND_DEBUG
-      Serial.print(inChar);   // Echo back to serial stream
+      Console.print(inChar);   // Echo back to Console stream
     #endif
 
     if (inChar == term) {     // Check for the terminator (default '\r') meaning end of command
       #ifdef SERIALCOMMAND_DEBUG
-        Serial.print("Received: ");
-        Serial.println(buffer);
+        Console.print("Received: ");
+        Console.println(buffer);
       #endif
 
       char *command = strtok_r(buffer, delim, &last);   // Search for command at start of buffer
@@ -88,18 +98,18 @@ void SerialCommand::readSerial() {
         boolean matched = false;
         for (int i = 0; i < commandCount; i++) {
           #ifdef SERIALCOMMAND_DEBUG
-            Serial.print("Comparing [");
-            Serial.print(command);
-            Serial.print("] to [");
-            Serial.print(commandList[i].command);
-            Serial.println("]");
+            Console.print("Comparing [");
+            Console.print(command);
+            Console.print("] to [");
+            Console.print(commandList[i].command);
+            Console.println("]");
           #endif
 
           // Compare the found command against the list of known commands for a match
           if (strncmp(command, commandList[i].command, SERIALCOMMAND_MAXCOMMANDLENGTH) == 0) {
             #ifdef SERIALCOMMAND_DEBUG
-              Serial.print("Matched Command: ");
-              Serial.println(command);
+              Console.print("Matched Command: ");
+              Console.println(command);
             #endif
 
             // Execute the stored handler function for the command
@@ -120,7 +130,7 @@ void SerialCommand::readSerial() {
         buffer[bufPos] = '\0';      // Null terminate
       } else {
         #ifdef SERIALCOMMAND_DEBUG
-          Serial.println("Line buffer is full - increase SERIALCOMMAND_BUFFER");
+          Console.println("Line buffer is full - increase ConsoleCOMMAND_BUFFER");
         #endif
       }
     }
@@ -130,7 +140,8 @@ void SerialCommand::readSerial() {
 /*
  * Clear the input buffer.
  */
-void SerialCommand::clearBuffer() {
+template<typename T, typename T2>
+void SerialCommand<T, T2>::clearBuffer() {
   buffer[0] = '\0';
   bufPos = 0;
 }
@@ -139,6 +150,7 @@ void SerialCommand::clearBuffer() {
  * Retrieve the next token ("word" or "argument") from the command buffer.
  * Returns NULL if no more tokens exist.
  */
-char *SerialCommand::next() {
+template<typename T, typename T2>
+char *SerialCommand<T, T2>::next() {
   return strtok_r(NULL, delim, &last);
 }
