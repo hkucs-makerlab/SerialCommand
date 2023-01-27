@@ -22,7 +22,7 @@
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
 #include <SoftwareSerial.h>
-#include "SerialCommand.hpp"
+#include "SerialCommand.h"
 template class SerialCommand<HardwareSerial, HardwareSerial>;
 template class SerialCommand<HardwareSerial, SoftwareSerial>;
 template class SerialCommand<SoftwareSerial, SoftwareSerial>;
