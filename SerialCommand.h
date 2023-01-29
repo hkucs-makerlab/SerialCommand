@@ -43,10 +43,14 @@ class SerialCommand {
   void readSerial();   // Main entry point.
   void clearBuffer();  // Clears the input buffer.
   char *next();        // Returns pointer to next token found in command buffer (for getting arguments to commands).
+  void setDelim(char ch) {
+    delim[0]=ch;
+    delim[1]='\0';
+  }
 
  private:
-  T2 &Console;
-  T &BlueTooth;
+  T &bluetooth;
+  T2 &console;
   // Command/handler dictionary
   struct SerialCommandCallback {
     char command[SERIALCOMMAND_MAXCOMMANDLENGTH + 1];
