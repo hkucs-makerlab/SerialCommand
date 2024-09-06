@@ -21,12 +21,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "SerialCommand.hpp"
+#ifdef AVR
 #include <SoftwareSerial.h>
-#include "SerialCommand.h"
-template class SerialCommand<HardwareSerial, HardwareSerial>;
 template class SerialCommand<HardwareSerial, SoftwareSerial>;
 template class SerialCommand<SoftwareSerial, SoftwareSerial>;
 template class SerialCommand<SoftwareSerial, HardwareSerial>;
+#endif
+template class SerialCommand<HardwareSerial, HardwareSerial>;
 /**
  * Constructor makes sure some things are set.
  */
