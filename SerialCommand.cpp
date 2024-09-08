@@ -21,6 +21,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this library.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "SerialCommand.hpp"
 #ifdef AVR
 #include <SoftwareSerial.h>
@@ -52,7 +53,7 @@ SerialCommand<T, T2>::SerialCommand(T& bluetooth, T2& console)
  * to the handler function to deal with it.
  */
 template<typename T, typename T2>
-void SerialCommand<T, T2>::addCommand(const char *command, void (*function)()) {
+void SerialCommand<T, T2>::addCommand(const char *command, void (*function)(SerialCommand<T, T2> *)) {
   #ifdef SERIALCOMMAND_DEBUG
     console.print("Adding command (");
     console.print(commandCount);
@@ -71,7 +72,7 @@ void SerialCommand<T, T2>::addCommand(const char *command, void (*function)()) {
  * isn't in the list of commands.
  */
 template<typename T, typename T2>
-void SerialCommand<T, T2>::setDefaultHandler(void (*function)(const char *)) {
+void SerialCommand<T, T2>::setDefaultHandler(void (*function)(SerialCommand<T, T2> *, const char *)) {
   defaultHandler = function;
 }
 
@@ -115,13 +116,13 @@ void SerialCommand<T, T2>::readSerial() {
             #endif
 
             // Execute the stored handler function for the command
-            (*commandList[i].function)();
+            (*commandList[i].function)(this);
             matched = true;
             break;
           }
         }
         if (!matched && (defaultHandler != NULL)) {
-          (*defaultHandler)(command);
+          (*defaultHandler)(this, command);
         }
       }
       clearBuffer();

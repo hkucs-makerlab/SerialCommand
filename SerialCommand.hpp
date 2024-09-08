@@ -25,7 +25,8 @@
 #define SerialCommand_h
 #include <Arduino.h>
 
-// Size of the input buffer in bytes (maximum length of one command plus arguments)
+// Size of the input buffer in bytes (maximum length of one command plus
+// arguments)
 #define SERIALCOMMAND_BUFFER 32
 // Maximum length of a command excluding the terminating null
 #define SERIALCOMMAND_MAXCOMMANDLENGTH 8
@@ -36,38 +37,48 @@
 template <typename T, typename T2>
 class SerialCommand {
  public:
-  SerialCommand(T &, T2 &);                                  // Constructor
-  void addCommand(const char *command, void (*function)());  // Add a command to the processing dictionary.
-  void setDefaultHandler(void (*function)(const char *));    // A handler to call when no valid command received.
+  SerialCommand(T &, T2 &);  // Constructor
+  void addCommand(
+      const char *command,
+      void (*function)(SerialCommand<T, T2>
+                           *));  // Add a command to the processing dictionary.
+  void setDefaultHandler(void (*function)(
+      SerialCommand<T, T2> *, const char *));  // A handler to call when no valid command received.
 
   void readSerial();   // Main entry point.
   void clearBuffer();  // Clears the input buffer.
-  char *next();        // Returns pointer to next token found in command buffer (for getting arguments to commands).
+  char *next();  // Returns pointer to next token found in command buffer (for
+                 // getting arguments to commands).
   void setDelim(char ch) {
-    delim[0]=ch;
-    delim[1]='\0';
+    delim[0] = ch;
+    delim[1] = '\0';
   }
 
- private:
+ public:
   T &bluetooth;
   T2 &console;
+
+ private:
   // Command/handler dictionary
   struct SerialCommandCallback {
     char command[SERIALCOMMAND_MAXCOMMANDLENGTH + 1];
-    void (*function)();
-  };                                   // Data structure to hold Command/Handler function key-value pairs
-  SerialCommandCallback *commandList;  // Actual definition for command/handler array
+    void (*function)(SerialCommand<T, T2> *);
+  };  // Data structure to hold Command/Handler function key-value pairs
+  SerialCommandCallback
+      *commandList;  // Actual definition for command/handler array
   byte commandCount;
 
   // Pointer to the default handler function
-  void (*defaultHandler)(const char *);
+  void (*defaultHandler)(SerialCommand<T, T2> *, const char *);
 
-  char delim[2];  // null-terminated list of character to be used as delimeters for tokenizing (default " ")
+  char delim[2];  // null-terminated list of character to be used as delimeters
+                  // for tokenizing (default " ")
   char term;      // Character that signals end of command (default '\n')
 
-  char buffer[SERIALCOMMAND_BUFFER + 1];  // Buffer of stored characters while waiting for terminator character
+  char buffer[SERIALCOMMAND_BUFFER + 1];  // Buffer of stored characters while
+                                          // waiting for terminator character
   byte bufPos;                            // Current position in the buffer
-  char *last;                             // State variable used by strtok_r during processing
+  char *last;  // State variable used by strtok_r during processing
 };
 
 #endif  // SerialCommand_h
